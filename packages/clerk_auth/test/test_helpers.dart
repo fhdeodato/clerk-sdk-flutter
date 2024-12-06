@@ -33,7 +33,7 @@ class TestLogPrinter extends Printer {
   }
 }
 
-class TestHttpClient implements HttpClient {
+class TestHttpClient implements ClerkHttpClient {
   final _expectations = <String, List<Response>>{};
 
   @override

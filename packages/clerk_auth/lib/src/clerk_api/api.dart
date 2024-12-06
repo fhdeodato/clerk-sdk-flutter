@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show HttpStatus, HttpHeaders;
 
-import 'package:clerk_auth/clerk_auth.dart';
 import 'package:clerk_auth/src/clerk_api/token_cache.dart';
+import 'package:clerk_auth/src/clerk_auth/persistor.dart';
+import 'package:clerk_auth/src/utils/extensions.dart';
+import 'package:clerk_auth/src/utils/logging.dart';
 import 'package:http/http.dart' as http;
 
 export 'package:clerk_auth/src/models/models.dart';
@@ -40,7 +42,7 @@ class Api with Logging {
     required String publishableKey,
     Persistor persistor = Persistor.none,
     SessionTokenPollMode pollMode = SessionTokenPollMode.onDemand,
-    HttpClient? client,
+    http.Client? client,
   }) =>
       Api._(
         TokenCache(
@@ -48,13 +50,13 @@ class Api with Logging {
           cacheId: publishableKey.hashCode,
         ),
         _deriveDomainFrom(publishableKey),
-        client ?? const DefaultHttpClient(),
+        client ?? http.Client(),
         pollMode,
       );
 
   final TokenCache _tokenCache;
   final String _domain;
-  final HttpClient _client;
+  final http.Client _client;
   final SessionTokenPollMode _pollMode;
   Timer? _pollTimer;
 
@@ -588,13 +590,30 @@ class Api with Logging {
     return resp;
   }
 
+  Future<http.Response> _send(
+    _HttpMethod method,
+    Uri uri,
+    Map<String, String>? headers,
+    Map<String, dynamic>? body,
+  ) async {
+    final request = http.Request(method.toString(), uri);
+    if (headers != null) {
+      request.headers.addAll(headers);
+    }
+    if (body != null) {
+      request.bodyFields = body.toStringMap();
+    }
+    final streamedResponse = await request.send();
+    return http.Response.fromStream(streamedResponse);
+  }
+
   Uri _uri(String path, Map<String, dynamic> params) => Uri(
       scheme: _scheme,
       host: _domain,
       path: 'v1$path',
       queryParameters: params.toStringMap());
 
-  Map<String, String> _headers(HttpMethod method,
+  Map<String, String> _headers(_HttpMethod method,
       [Map<String, String>? headers]) {
     return {
       HttpHeaders.acceptHeader: 'application/json',
@@ -623,4 +642,28 @@ class Api with Logging {
     final encodedDomain = utf8.decode(base64.decode(encodedPart));
     return encodedDomain.split('\$').first;
   }
+}
+
+/// Enum detailing [_HttpMethod]s used by the Clerk API
+enum _HttpMethod {
+  /// DELETE
+  delete,
+
+  /// GET
+  get,
+
+  /// PATCH
+  patch,
+
+  /// POST
+  post;
+
+  /// Is the method GET or something else
+  bool get isGet => this == get;
+
+  /// Is the method something other than GET
+  bool get isNotGet => isGet == false;
+
+  @override
+  String toString() => name.toUpperCase();
 }

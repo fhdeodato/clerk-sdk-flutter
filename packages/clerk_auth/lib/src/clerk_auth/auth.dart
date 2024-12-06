@@ -1,6 +1,8 @@
 import 'dart:async';
 
-import 'package:clerk_auth/clerk_auth.dart';
+import 'package:clerk_auth/src/clerk_api/api.dart';
+import 'package:clerk_auth/src/clerk_auth/persistor.dart';
+import 'package:http/http.dart';
 
 export 'auth_error.dart';
 export 'http_client.dart';

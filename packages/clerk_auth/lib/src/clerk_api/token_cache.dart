@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:clerk_auth/clerk_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 

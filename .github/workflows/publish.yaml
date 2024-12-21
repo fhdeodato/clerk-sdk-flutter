@@ -1,0 +1,44 @@
+name: Publish Packages
+
+on:
+  workflow_call:
+
+permissions:
+  id-token: write # Required for authentication using OIDC
+  contents: read
+
+# Publish using custom workflow
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo (self)
+        uses: actions/checkout@v4
+
+      - name: Install flutter
+        uses: flutter-actions/setup-flutter@v4
+        with:
+          version: '3.10.0'
+
+      # Setup Flutter SDK and automated pub.dev credentials
+      - uses: flutter-actions/setup-pubdev-credentials@v1
+
+      - name: Install dependencies
+        run: flutter pub get
+      # Here you can insert custom steps you need
+      # - name: Build
+      #   run: flutter build ...
+      - name: Publish
+        run: flutter pub publish --force
+
+  publish_clerk_auth:
+    name: Publish clerk_auth package
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@main
+    with:
+      working-directory: packages/clerk_auth
+  publish_clerk_flutter:
+    name: Publish clerk_flutter package
+    needs: [publish_clerk_auth]
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@main
+    with:
+      working-directory: packages/clerk_flutter

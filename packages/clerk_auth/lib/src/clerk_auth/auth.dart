@@ -227,6 +227,26 @@ class Auth {
     update();
   }
 
+  /// Sign In with pre-collected oAuth Token
+  ///
+  /// [code] Grant code from oAuth Provider (if you have one)
+  /// [token] OpenID token from oAuth Provider
+  ///
+  Future<void> oauthTokenSignIn({
+    required Strategy strategy,
+    String? code,
+    String? token,
+  }) async {
+    await _api
+        .createOAuthTokenSignIn(
+          strategy: strategy,
+          code: code,
+          token: token,
+        )
+        .then(_housekeeping);
+    update();
+  }
+
   /// Prepare to connect an account via an oAuth provider
   ///
   Future<void> oauthConnect({required Strategy strategy}) async {
@@ -259,11 +279,23 @@ class Auth {
     String? redirectUrl,
   }) async {
     if (client.signIn == null) {
-      // if password and identifier been presented, we can immediately attempt
-      // a sign in;  if null they will be ignored
-      await _api
-          .createSignIn(identifier: identifier, password: password)
-          .then(_housekeeping);
+      if (strategy.isOAuthToken && token is String) {
+        // If we have been given an existing oauth token try
+        // and sign-in with that
+        await _api
+            .createOAuthTokenSignIn(
+              strategy: strategy,
+              code: code,
+              token: token,
+            )
+            .then(_housekeeping);
+      } else {
+        // if password and identifier been presented, we can immediately attempt
+        // a sign in; if null they will be ignored
+        await _api
+            .createSignIn(identifier: identifier, password: password)
+            .then(_housekeeping);
+      }
     }
 
     switch (client.signIn) {
@@ -279,9 +311,18 @@ class Auth {
             .createSignIn(identifier: identifier, password: password)
             .then(_housekeeping);
 
-      case SignIn signIn when strategy.isOauth && token is String:
+      case SignIn _ when strategy.isOAuthToken && token is String:
         await _api
-            .sendOauthToken(signIn, strategy: strategy, token: token)
+            .createOAuthTokenSignIn(
+              strategy: strategy,
+              code: code,
+              token: token,
+            )
+            .then(_housekeeping);
+
+      case SignIn signIn when strategy.isOAuth && token is String:
+        await _api
+            .completeOAuthSso(signIn, strategy: strategy, token: token)
             .then(_housekeeping);
 
       case SignIn signIn

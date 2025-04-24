@@ -169,6 +169,29 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
     }
   }
 
+  /// Performs sign-in for [strategy] through oAuth id-token and/or grant-code.
+  ///
+  /// [idToken] The ID token to use for authentication, obtained from
+  /// the provider during the sign-in process.
+  ///
+  Future<void> authenticateWithIdToken(
+    BuildContext context,
+    clerk.Strategy strategy,
+    String? grantCode,
+    String idToken, {
+    ClerkErrorCallback? onError,
+  }) async {
+    await safelyCall(
+      context,
+      () => oauthTokenSignIn(
+        strategy: strategy,
+        code: grantCode,
+        token: idToken,
+      ),
+      onError: onError,
+    );
+  }
+
   /// Convenience method to make an auth call to the backend via ClerkAuth
   /// with error handling
   Future<T?> safelyCall<T>(

@@ -310,6 +310,38 @@ class Api with Logging {
     );
   }
 
+  // FIXME: https://clerk.com/docs/reference/frontend-api/tag/Sign-Ins#operation/createSignIn
+  
+  
+  /// Create a [SignIn] object through using the response from
+  /// a 3rd party oAuth sign-in.
+  ///
+  /// [code] Grant code from oAuth Provider (if you have one)
+  /// [token] OpenID token from oAuth Provider
+  ///
+  Future<ApiResponse> createOAuthTokenSignIn({
+    required Strategy strategy,
+    String? code,
+    String? token,
+  }) async {
+    assert(
+      strategy.isOAuthToken,
+      '$strategy does not support oAuth Token login.',
+    );
+    assert(
+      !(code == null && token == null),
+      'Both code and token cannot be null',
+    );
+    return await _fetchApiResponse(
+      '/client/sign_ins',
+      params: {
+        'strategy': strategy,
+        'code': code,
+        'token': token,
+      },
+    );
+  }
+
   /// Connect an account via oauth
   ///
   Future<ApiResponse> connectAccount({
@@ -434,9 +466,9 @@ class Api with Logging {
     );
   }
 
-  /// Send a token received from an oAuth provider to the back end
+  /// Completes the SSO sign-in process by sending [token] to the back end
   ///
-  Future<ApiResponse> sendOauthToken(
+  Future<ApiResponse> completeOAuthSso(
     SignIn signIn, {
     required Strategy strategy,
     required String token,

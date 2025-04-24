@@ -32,7 +32,7 @@ class _ClerkSSOPanelState extends State<ClerkSSOPanel>
   Widget build(BuildContext context) {
     final authState = ClerkAuth.of(context);
     final oauthStrategies = authState.env.config.identificationStrategies //
-        .where((i) => i.isOauth)
+        .where((i) => i.isOAuth)
         .toList();
     final socialConnections = authState.env.user.socialSettings.values //
         .where((s) => oauthStrategies.contains(s.strategy))

@@ -56,13 +56,13 @@ class Environment with InformativeToStringMixin {
 
   /// [Iterable] of non-oauth identification strategies
   Iterable<Strategy> get identificationStrategies =>
-      strategies.where((i) => i.isOauth == false);
+      strategies.where((i) => i.isOAuth == false);
 
   /// Do we have identification strategies?
   bool get hasIdentificationStrategies => identificationStrategies.isNotEmpty;
 
   /// [Iterable] of oauth identification strategies
-  Iterable<Strategy> get oauthStrategies => strategies.where((i) => i.isOauth);
+  Iterable<Strategy> get oauthStrategies => strategies.where((i) => i.isOAuth);
 
   /// Do we have oauth strategies?
   bool get hasOauthStrategies => oauthStrategies.isNotEmpty;

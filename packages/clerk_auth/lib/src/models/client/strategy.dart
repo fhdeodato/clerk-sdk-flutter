@@ -43,6 +43,13 @@ class Strategy {
   /// oauth google strategy
   static const oauthGoogle = Strategy(name: _oauth, provider: 'google');
 
+  /// oauth google one-tap
+  static const googleOneTap = Strategy(name: 'google_one_tap');
+
+  /// oauth token google strategy
+  static const oauthTokenGoogle =
+      Strategy(name: _oauthToken, provider: 'google');
+
   /// oauth token apple strategy
   static const oauthTokenApple = Strategy(name: _oauthToken, provider: 'apple');
 
@@ -51,7 +58,8 @@ class Strategy {
     oauthApple.toString(): oauthApple,
     oauthGithub.toString(): oauthGithub,
     oauthGoogle.toString(): oauthGoogle,
-    // 'google_one_tap': oauthGoogle, // guessing this is a synonym?
+    googleOneTap.toString(): googleOneTap,
+    oauthTokenGoogle.toString(): oauthTokenGoogle,
     oauthTokenApple.toString(): oauthTokenApple,
   };
 
@@ -138,10 +146,13 @@ class Strategy {
   };
 
   /// is oauth?
-  bool get isOauth => const [_oauthToken, _oauthCustom, _oauth].contains(name);
+  bool get isOAuth => const [_oauthToken, _oauthCustom, _oauth].contains(name);
+
+  /// is oauth token strategy?
+  bool get isOAuthToken => name.startsWith(_oauthToken);
 
   /// is other strategy?
-  bool get isOtherStrategy => isOauth == false && requiresPassword == false;
+  bool get isOtherStrategy => isOAuth == false && requiresPassword == false;
 
   /// requires password?
   bool get requiresPassword => const [
